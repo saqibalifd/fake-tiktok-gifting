@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/utils.dart';
+import 'package:tiktok/controllers/balance_controller.dart';
+import 'package:tiktok/controllers/transaction_controller.dart';
 import 'package:tiktok/models/transcation_model.dart';
 import 'package:tiktok/utils/app_colors.dart';
 
@@ -16,6 +20,11 @@ class TransferDetailScreen extends StatefulWidget {
 }
 
 class _TransferDetailScreenState extends State<TransferDetailScreen> {
+  final BalanceController balanceController = Get.put(BalanceController());
+  final TransactionController transactionController = Get.put(
+    TransactionController(),
+  );
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

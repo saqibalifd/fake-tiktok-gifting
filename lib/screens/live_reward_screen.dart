@@ -83,7 +83,7 @@ class _LiveRewardScreenState extends State<LiveRewardScreen> {
                             style: TextStyle(fontSize: 12),
                           ),
                           Text(
-                            'USD ${balanceController.myBalance.availableReward}',
+                            'USD ${balanceController.myBalance.value.availableReward}',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
@@ -101,12 +101,14 @@ class _LiveRewardScreenState extends State<LiveRewardScreen> {
                           Row(
                             children: [
                               CircleAvatar(radius: 3),
-                              Text(
-                                'USD ${balanceController.myBalance.upcomingReward}',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: kRedColor,
+                              Obx(
+                                () => Text(
+                                  'USD ${balanceController.myBalance.value.upcomingReward}',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: kRedColor,
+                                  ),
                                 ),
                               ),
                             ],
@@ -130,12 +132,14 @@ class _LiveRewardScreenState extends State<LiveRewardScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text('USD ', style: TextStyle(fontSize: 12)),
-                          Text(
-                            balanceController.myBalance.availableReward
-                                .toStringAsFixed(0),
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
+                          Obx(
+                            () => Text(
+                              balanceController.myBalance.value.availableReward
+                                  .toStringAsFixed(0),
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                           Text('.00', style: TextStyle(fontSize: 12)),
@@ -155,10 +159,12 @@ class _LiveRewardScreenState extends State<LiveRewardScreen> {
                                 builder: (context) => TransferScreen(
                                   totalTransfer: balanceController
                                       .myBalance
+                                      .value
                                       .remainingLimit
                                       .toStringAsFixed(0),
                                   transferLimit: balanceController
                                       .myBalance
+                                      .value
                                       .totalTransactionLimit
                                       .toStringAsFixed(0),
                                 ),
@@ -178,6 +184,9 @@ class _LiveRewardScreenState extends State<LiveRewardScreen> {
                         width: double.maxFinite,
                         child: ElevatedButton(
                           style: ButtonStyle(
+                            surfaceTintColor: WidgetStateProperty.all(
+                              kWhiteColor,
+                            ),
                             backgroundColor: WidgetStateProperty.all(
                               kWhiteColor,
                             ),
@@ -186,12 +195,7 @@ class _LiveRewardScreenState extends State<LiveRewardScreen> {
                             ),
                           ),
                           onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => LiveRewardScreen(),
-                              ),
-                            );
+                            setState(() {});
                           },
                           child: Text(
                             'Exchange',
@@ -212,9 +216,11 @@ class _LiveRewardScreenState extends State<LiveRewardScreen> {
                           '(Remain/Total)',
                           style: TextStyle(fontSize: 12),
                         ),
-                        trailing: Text(
-                          "\$${balanceController.myBalance.remainingLimit}/\$${balanceController.myBalance.totalTransactionLimit.toStringAsFixed(0)}M",
-                          style: TextStyle(fontSize: 12),
+                        trailing: Obx(
+                          () => Text(
+                            "\$${balanceController.myBalance.value.remainingLimit}/\$${balanceController.myBalance.value.totalTransactionLimit.toStringAsFixed(0)}M",
+                            style: TextStyle(fontSize: 12),
+                          ),
                         ),
                       ),
                       Row(
@@ -260,43 +266,53 @@ class _LiveRewardScreenState extends State<LiveRewardScreen> {
                           Column(
                             children: [
                               Text('In:', style: TextStyle(fontSize: 12)),
-                              Text(
-                                'USD${balanceController.myBalance.totalIn.toString()}',
-                                style: TextStyle(fontSize: 12),
+                              Obx(
+                                () => Text(
+                                  'USD${balanceController.myBalance.value.totalIn.toString()}',
+                                  style: TextStyle(fontSize: 12),
+                                ),
                               ),
                             ],
                           ),
                           Column(
                             children: [
                               Text('Out:', style: TextStyle(fontSize: 12)),
-                              Text(
-                                'USD${balanceController.myBalance.totalOut}',
-                                style: TextStyle(fontSize: 12),
+                              Obx(
+                                () => Text(
+                                  'USD${balanceController.myBalance.value.totalOut}',
+                                  style: TextStyle(fontSize: 12),
+                                ),
                               ),
                             ],
                           ),
                         ],
                       ),
-                      for (
-                        int i = 0;
-                        i < transactionController.transactionList.length;
-                        i++
-                      )
-                        ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          title: Text(
-                            'Transfer to ${transactionController.transactionList[i].receiverUsername}',
-                            style: TextStyle(fontSize: 12, color: kBlackColor),
-                          ),
-                          subtitle: Text(
-                            '03/04/2026',
-                            style: TextStyle(fontSize: 12),
-                          ),
-                          trailing: Text(
-                            '-USD ${transactionController.transactionList[i].estimatedAmountReceive}',
-                            style: TextStyle(fontSize: 12),
+
+                      ListView.builder(
+                        reverse: true,
+                        shrinkWrap: true,
+                        itemCount: transactionController.transactionList.length,
+                        itemBuilder: (context, index) => Obx(
+                          () => ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: Text(
+                              'Transfer to ${transactionController.transactionList[index].receiverUsername}',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: kBlackColor,
+                              ),
+                            ),
+                            subtitle: Text(
+                              '03/04/2026',
+                              style: TextStyle(fontSize: 12),
+                            ),
+                            trailing: Text(
+                              '-USD ${transactionController.transactionList[index].estimatedAmountReceive}',
+                              style: TextStyle(fontSize: 12),
+                            ),
                           ),
                         ),
+                      ),
                     ],
                   ),
                 ),

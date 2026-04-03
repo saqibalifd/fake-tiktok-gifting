@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:tiktok/models/transcation_model.dart';
+import 'package:get/get.dart';
+import 'package:tiktok/controllers/balance_controller.dart';
+import 'package:tiktok/controllers/transaction_controller.dart';
 import 'package:tiktok/models/user_model.dart';
-import 'package:tiktok/screens/transfer_detail_screen.dart';
 import 'package:tiktok/utils/app_colors.dart';
-import 'package:tiktok/utils/utils.dart';
 
 class TransferScreen extends StatefulWidget {
   final String? transferLimit;
@@ -15,22 +15,18 @@ class TransferScreen extends StatefulWidget {
 }
 
 class _TransferScreenState extends State<TransferScreen> {
-  final List<User> listUsers = <User>[
-    User(username: 'ali', profileImage: 'assets/saqib.jpeg'),
-    User(username: 'saqib', profileImage: 'assets/saqib.jpeg'),
-
-    User(username: 'adeel', profileImage: 'assets/saqib.jpeg'),
-
-    User(username: 'anas', profileImage: 'assets/saqib.jpeg'),
-  ];
-
-  final User slectedUser = User(
-    username: 'Ali',
-    profileImage: 'assets/saqib.jpeg',
-  );
-
   final TextEditingController nameController = TextEditingController();
   final TextEditingController transferAmoutController = TextEditingController();
+  final TransactionController transactionController = Get.put(
+    TransactionController(),
+  );
+  final BalanceController balanceController = Get.put(BalanceController());
+  @override
+  void dispose() {
+    super.initState();
+    nameController.dispose();
+    transferAmoutController.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -174,7 +170,7 @@ class _TransferScreenState extends State<TransferScreen> {
                               hintStyle: TextStyle(
                                 fontSize: 22,
                                 fontWeight: FontWeight.w600,
-                                color: kBlackColor,
+                                color: kLightGreyColor,
                               ),
                             ),
                           ),
@@ -233,56 +229,49 @@ class _TransferScreenState extends State<TransferScreen> {
                 style: TextStyle(fontSize: 12, color: kLightGreyColor),
               ),
               SizedBox(height: 5),
-              SizedBox(
-                width: double.maxFinite,
-                child: ElevatedButton(
-                  style: ButtonStyle(
-                    backgroundColor: WidgetStateProperty.all(kRedColor),
-                  ),
-                  onPressed: () {
-                    var servicefee = serviceFee(
-                      double.parse(transferAmoutController.text),
-                    );
 
-                    double deducted = servicefee['deduction']!;
-                    double remaining = servicefee['remaining']!;
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => TransferDetailScreen(
-                          totalAmount: transferAmoutController.text,
-                          transactionModel: TransactionModel(
-                            receiverUsername: slectedUser.username,
-                            serviceFee: deducted,
-                            estimatedAmountReceive: remaining,
-                            transactionTime: DateTime.now(),
-                            arrivalTime: DateTime.now(),
-                            transactionId: Utils.generateRandomId(),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                  child: Text(
-                    'Transfer',
-                    style: TextStyle(
-                      color: kWhiteColor,
-                      fontWeight: FontWeight.bold,
+              Obx(() {
+                return SizedBox(
+                  width: double.maxFinite,
+                  child: ElevatedButton(
+                    style: ButtonStyle(
+                      backgroundColor: WidgetStateProperty.all(kRedColor),
                     ),
+                    onPressed: () {
+                      transactionController.isLoading.isTrue
+                          ? null
+                          : transactionController.transfer(
+                              transferAmoutController,
+                              nameController,
+                              context,
+                            );
+                      balanceController.deductBalance(
+                        double.parse(transferAmoutController.text),
+                      );
+                    },
+                    child: transactionController.isLoading.isTrue
+                        ? SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              color: kWhiteColor,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : Text(
+                            'Transfer',
+                            style: TextStyle(
+                              color: kWhiteColor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
-                ),
-              ),
+                );
+              }),
             ],
           ),
         ),
       ),
     );
-  }
-
-  Map<String, double> serviceFee(double totalAmount) {
-    double deduction = totalAmount * 0.2;
-    double remaining = totalAmount - deduction;
-
-    return {'deduction': deduction, 'remaining': remaining};
   }
 }
